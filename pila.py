@@ -1,0 +1,1 @@
+#Estructura de datos que se correspondera con una pila y la logica con la que se pueda jugar
