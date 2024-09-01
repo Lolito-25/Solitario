@@ -59,6 +59,8 @@ class Pila_Baraja():#Pila de la que saldran y se pondran las cartas
         self.pila_ini = Pila(cartas)
         self.pila_fin = Pila([])
 
+    #AÑADIR DISTINCION EN EL POP, NO FUNCIONARIA ASI!!!!
+
     def pop(self):
         if self.pila_ini.get_num_cartas() > 0: #Si tengo cartas en la pila de inicio, simplemente la giro y la envio a la pila fin
             carta = self.pila_ini.cartas.pop()#Quito la ultima carta de la lista de la pila inicial y la meto al inicio de la otra pila
