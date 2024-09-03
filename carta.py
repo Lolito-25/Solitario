@@ -4,7 +4,7 @@ import os
 VALORES = {
     "A":1 , "2":2, "3":3, "4":4, "5":5, "6":6, "7":7, "8":8, "9":9, "10":10, "J":11, "Q":12, "K":13
 }
-REVERSO= py.image.load(os.path.join("Imagenes","Reverso.jpg"))#Reverso de la carta
+REVERSO= py.transform.scale((py.image.load(os.path.join("Imagenes","Reverso.jpg"))),(125,175))#Reverso de la carta
 
 class Carta(object):
     """
@@ -65,7 +65,7 @@ class Carta(object):
     #Esta funcion solo se encargara de pintar las cartas, las coordenadas deberan de manejarlas las pilas correspondientes
     def draw_carta(self,win:py.Surface,x:int,y:int):
         rect = self.IMAGEN.get_rect(topleft = (x,y))#Obtengo el rectangulo asociado a la imagen(hitbox) y cambio sus coordenadas a las pasadas como parametros en la funcion
-        win.blit(self.IMAGEN,rect)#Dibujo la imagen
+        win.blit(self.IMAGEN,rect.topleft)#Dibujo la imagen
 
         
         

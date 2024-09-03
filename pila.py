@@ -1,5 +1,6 @@
 from carta import Carta
-
+import pygame as py
+import os
 #Estructura de datos que se correspondera con una pila
 
 '''
@@ -8,12 +9,17 @@ Estos son los tipos de pila que van a haber:
 -> 7 pilas de tipo Pila_Mesa, seran con las cuales puedes cambiar entre pilas
 -> 4 pilas de tipo Pila_Fin, seran los montones finales en los que colocar las cartas
 '''
-OFFSET = 80 #Representa el offset que tienen las pilas de cartas entre ellas en caso de ser del mismo tipo
+OFFSET_X = 200 #Representa el offset que tienen las pilas de cartas entre ellas en caso de ser del mismo tipo
+OFFSET_Y = 35 #Representa el offset en el eje y
+
+JOKER= py.transform.scale((py.image.load(os.path.join("Imagenes","Joker.jpg"))),(125,175))#Reverso de la carta
+
 
 class Pila(object):
 
     def __init__(self, cartas:list[Carta], x:int, y:int) :
         self.cartas = cartas #Lista de cartas que contendra la pila de cartas de las cuales inicialmente solo 1 estara dada la vuelta y el resto no
+        #Ambas coordenadas x e y representan donde se van a dibujar las pilas 
         self.x = x
         self.y = y
 
@@ -45,10 +51,21 @@ class Pila(object):
         else:
             return len(self.cartas)
     
+    #Para dibujar la pila solo necesito la ventana 
+    def draw_pila(self,win:py.Surface):
+        #Para ser mas eficiente, no he de pintar todas las cartas una encima de otra, no tendira sentido ya que no se verian, solo pinto la que esta mas arriba
+        num = self.get_num_cartas()
+        if num > 0:
+            self.cartas[-1].draw_carta(win,self.x,self.y)
+        else:
+            rect = JOKER.get_rect(topleft = (self.x,self.y))#Obtengo el rectangulo asociado a la imagen(hitbox) y cambio sus coordenadas a las pasadas como parametros en la funcion
+            win.blit(JOKER,rect.topleft)#Dibujo la imagen
+
+
 class Pila_Mesa(Pila):#Pila que corresponde a las cartas del juego inicial
 
-    def __init__(self, cartas: list[Carta]):
-        super().__init__(cartas)#Llamo al constructor del padre con las cartas
+    def __init__(self, cartas:list[Carta], x:int, y:int) :
+        super().__init__(cartas,x,y)#Llamo al constructor del padre con las cartas
         self.pila_refresh()
 
 
@@ -68,11 +85,21 @@ class Pila_Mesa(Pila):#Pila que corresponde a las cartas del juego inicial
             if (cartas_unir[-1].get_valor() < self.cartas[0].get_valor()) and (cartas_unir[-1].color != self.cartas[0].color):
                 self.cartas = cartas_unir + self.cartas
 
+    def draw_pila(self,win:py.Surface):
+        #Para estas, he de sumarle el offset para que se vean las cartas 
+        for pos in range(len(self.cartas)-1,-1,-1):#Recorro la lista desde el ultimo elemento hasta el principio
+            y_mod = self.y + (len(self.cartas)-1 - pos)*OFFSET_Y
+            self.cartas[pos].draw_carta(win,self.x,y_mod)
+
+
+
+
 class Pila_Baraja():#Pila de la que saldran y se pondran las cartas
     #Contendra 2 pilas del tipo Pila, de las cuales 1 sera la pila con todas las cartas restantes y la otra una pila vacia inicialmente
-    def __init__(self, cartas: list[Carta]):
-        self.pila_ini = Pila(cartas)
-        self.pila_fin = Pila([])
+    def __init__(self, cartas: list[Carta], x:int, y:int):
+        
+        self.pila_ini = Pila(cartas,x,y) #Esta pila se colocara a la derecha, por lo que no le sumaremos el offset
+        self.pila_fin = Pila([],x+OFFSET_X,y)
     '''
     Creo una distincion:
         -> pop_ini() : Sirve para sacar una carta de la baraja principal y ponerlo en la baraja final
@@ -92,14 +119,23 @@ class Pila_Baraja():#Pila de la que saldran y se pondran las cartas
         if self.pila_fin.get_num_cartas() > 0:
             return self.pila_fin.pop(0)
     
-    def get_num_cartas(self) -> (int):
-        return (self.pila_ini.get_num_cartas(),self.pila_fin.get_num_cartas())
+    def get_num_cartas_ini(self) -> int:
+        return self.pila_ini.get_num_cartas()
 
+    def get_num_cartas_fin(self) -> int:
+        return self.pila_fin.get_num_cartas()
+
+
+    def draw_pila(self,win:py.Surface):
+        self.pila_ini.draw_pila(win)
+        self.pila_fin.draw_pila(win)
 
 class Pila_Fin(Pila):#Pila en la que se colocaran las pilas finales
 
     def __init__(self,x:int ,y:int):#Inicialmente las pilas van a estar vacias
         self.cartas= []
+        self.x = x
+        self.y = y
     
     def join(self, carta: Carta):
         '''
