@@ -8,12 +8,14 @@ Estos son los tipos de pila que van a haber:
 -> 7 pilas de tipo Pila_Mesa, seran con las cuales puedes cambiar entre pilas
 -> 4 pilas de tipo Pila_Fin, seran los montones finales en los que colocar las cartas
 '''
+OFFSET = 80 #Representa el offset que tienen las pilas de cartas entre ellas en caso de ser del mismo tipo
 
 class Pila(object):
 
-    def __init__(self, cartas:list[Carta]) :
+    def __init__(self, cartas:list[Carta], x:int, y:int) :
         self.cartas = cartas #Lista de cartas que contendra la pila de cartas de las cuales inicialmente solo 1 estara dada la vuelta y el resto no
-        
+        self.x = x
+        self.y = y
 
     def pop(self,carta:Carta):
         if len(self.cartas)>0:
@@ -30,9 +32,10 @@ class Pila(object):
         self.cartas = self.cartas + [carta]
 
     def pila_refresh(self):
-        #Compruebo si la pila en la cima de la pila esta girada o no
-        if self.cartas[0].girado:#Si la carta esta girada le doy la vuelta
-            self.cartas[0].girar()
+        if self.get_num_cartas()>0:#Si hay cartas en la pila la refresco
+            #Compruebo si la pila en la cima de la pila esta girada o no
+            if self.cartas[0].girado:#Si la carta esta girada le doy la vuelta
+                self.cartas[0].girar()
         
         #Si no esta girada no hago nada
 
@@ -95,7 +98,7 @@ class Pila_Baraja():#Pila de la que saldran y se pondran las cartas
 
 class Pila_Fin(Pila):#Pila en la que se colocaran las pilas finales
 
-    def __init__(self):#Inicialmente las pilas van a estar vacias
+    def __init__(self,x:int ,y:int):#Inicialmente las pilas van a estar vacias
         self.cartas= []
     
     def join(self, carta: Carta):
