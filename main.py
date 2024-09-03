@@ -9,7 +9,6 @@ from pila import Pila_Baraja,Pila_Fin,Pila_Mesa
 DIR = "../Solitario/Imagenes/Cartas"#Direccion donde se encuentran las imagenes
 
 BARAJA=[]#Lista que contiene todas las cartas(Objeto) de la baraja
-REVERSO= py.image.load(os.path.join("Imagenes","Reverso.jpg"))#Reverso de la carta
 FONDO= py.image.load(os.path.join("Imagenes","Fondo.jpg"))#Fondo de pantalla
 
 PILA_MESA :list[Pila_Mesa]= []#Lista que contiene las 7 pilas de la mesa de juego
@@ -59,16 +58,35 @@ def repartir_cartas():#Metodo en el que se van a repartir las cartas en las pila
     #Finalmente puedo crear las ultimas 4 pilas que son las finales
     PILA_FIN = [Pila_Fin(),Pila_Fin(),Pila_Fin(),Pila_Fin()]
 
-def main():
+def draw_win(win):
+    win.blit(FONDO,(0,0))
+
+    py.display.update()
+
+
+def run(win:py.Surface,clock:py.time.Clock):
     global PILA_BARAJA,PILA_MESA,PILA_FIN
-    repartir_cartas()
-    for i in range(len(PILA_MESA)):
-        print("En la pila de mesa {} hay {} elementos".format(i+1, PILA_MESA[i].get_num_cartas()))
+    run = True
+    while run:
+        clock.tick(60)
+        for event in py.event.get():
+            if event.type == py.QUIT:
+                run = False
+                #MODIFICAR PARA QUE SE PUEDA VOLVER A JUGAR
+                #------------
+                py.quit()
+                quit()
+                #------------
+        draw_win(win)
+        
 
-    for i in range(len(PILA_FIN)):
-        print("En la pila final {} hay {} elementos".format(i+1, PILA_FIN[i].get_num_cartas()))
+def main():
 
-    print("En la pila de barajas hay {} cartas respectivamente".format(PILA_BARAJA.get_num_cartas()))
+    win = py.display.set_mode((ANCHO_VENTANA,ALTO_VENTANA))
+    clock = py.time.Clock()
+    run(win,clock)
+    #repartir_cartas() #Reparto las cartas de la partida, esto solo se va a hacer 1 vez por partida
+    
 
 
 
