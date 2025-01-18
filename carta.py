@@ -21,7 +21,7 @@ class Carta(object):
     """
     IMAGEN = REVERSO
     def __init__(self ,nombre: str ,img ,girado=True):
-        #Estas 3 variables son las caracteristicas de una carta
+        #Estas 4 variables son las caracteristicas de una carta
         self.tipo = nombre.split("_")[0]#Indicara de que tipo es la carta
         self.valor = VALORES.get(nombre.split("_")[-1])#Consigo el ultimo caracter del nombre que indica el tipo de carta y del diccionario de valores lo traduzco por un valor numerico del que aplicarle el valor
         self.color = self.calc_color()
@@ -30,7 +30,10 @@ class Carta(object):
         #Estas son las propiedades con las que podemos jugar
         self.img = img #Imagen de la carta
         self.girado = girado #Indica si la carta va a estar girada o no
+        self.pila = None
 
+        self.x = 0
+        self.y = 0
 
     def girar(self):
         global REVERSO
@@ -43,9 +46,14 @@ class Carta(object):
     def get_valor(self) -> int:
         return self.valor
     
-    def get_imagen(self) :
-        return self.IMAGEN
+    def get_rect(self) :
+        return self.img.get_rect(topleft=(self.x,self.y))
 
+    def get_color(self):
+        return self.color
+
+    def get_tipo(self):
+        return self.tipo
     def calc_color(self) -> str:
         
         if self.tipo == "Corazones" or self.tipo == "Rombo":
@@ -53,22 +61,30 @@ class Carta(object):
         else :
             return "N"
 
+    #Devolvera true si la carta esta girada (reverso)
+    def esta_girada(self):
+        return self.girado
+
+    def set_pila(self,pila):
+        self.pila = pila #Cambio la pila en la que se encuentra la carta
+    
+    def get_pila(self):
+        return self.pila
     '''
     Devuelve la hitbox de la carta si no esta girada y si esta girada devuelve None
     '''
     def get_mask(self):
-        if not(self.girado):
+        if not(self.esta_girada()):
             return py.mask.from_surface(self.IMAGEN)
         else:
             return None
     
     #Esta funcion solo se encargara de pintar las cartas, las coordenadas deberan de manejarlas las pilas correspondientes
     def draw_carta(self,win:py.Surface,x:int,y:int):
-        rect = self.IMAGEN.get_rect(topleft = (x,y))#Obtengo el rectangulo asociado a la imagen(hitbox) y cambio sus coordenadas a las pasadas como parametros en la funcion
+        self.x = x
+        self.y = y
+        rect = self.img.get_rect(topleft = (x,y))
         win.blit(self.IMAGEN,rect.topleft)#Dibujo la imagen
 
-        
-        
-
-    
-
+    def __str__(self):
+        return "La carta es "+self.get_tipo()+" "+self.get_color()+" "+str(self.get_valor())
