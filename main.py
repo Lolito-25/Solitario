@@ -4,7 +4,7 @@ from os import listdir
 import time as tm
 import random
 from carta import Carta
-from pila import Pila_Baraja,Pila_Fin,Pila_Mesa
+from pila import Pila_Baraja,Pila_Fin,Pila_Mesa,Pila
 #CONSTANTES
 DIR = "../Solitario/Imagenes/Cartas"#Direccion donde se encuentran las imagenes
 
@@ -46,7 +46,8 @@ La disposicion de las pilas de la mesa es la siguiente:
 """
 def repartir_cartas():#Metodo en el que se van a repartir las cartas en las pilas adecuadas
     global BARAJA
-    lista_pm=lista_pf=[]
+    lista_pm,lista_pf=[],[]
+    id:int=1
     #Empiezo por las pilas de la mesa
     for i in range(1,8):#Van a ser las 7 pilas
         cartas = []
@@ -54,18 +55,19 @@ def repartir_cartas():#Metodo en el que se van a repartir las cartas en las pila
             index = random.randint(0,len(BARAJA)-1)
             cartas.append(BARAJA.pop(index))
         #Una vez tengo lista la lista de cartas, la paso como parametro a la pila
-        lista_pm.append(Pila_Mesa(cartas,160+(i-1)*200,260))#La formula la saco de unos calculos precisos (Copium)
-
+        lista_pm.append(Pila_Mesa(cartas,160+(i-1)*200,260,id))#La formula la saco de unos calculos precisos (Copium)
+        id+=1
     #Ahora en la lista de BARAJA quedan las cartas que sobran, por lo que ya puedo hacer la pila_baraja
-    lista_pb = Pila_Baraja(BARAJA,160,25)
-    BARAJA = [] # Dejo la baraja vacia
+    pila_baraja = Pila_Baraja(BARAJA,160,25,id)
+    id+=1
     #Finalmente puedo crear las ultimas 4 pilas que son las finales
     for i in range (4):
-        lista_pf.append(Pila_Fin(760+i*200,25))
+        lista_pf.append(Pila_Fin(760+i*200,25,id))
+        id+=1
 
-    return (lista_pm,lista_pb,lista_pf)
+    return (lista_pm,pila_baraja,lista_pf)
 
-def draw_win(win:py.Surface,lista_pm:list[Pila_Mesa],lista_pb:Pila_Baraja,lista_pf:list[Pila_Fin],carta:Carta):
+def draw_win(win:py.Surface,lista_pm:list[Pila_Mesa],pila_baraja:Pila_Baraja,lista_pf:list[Pila_Fin],carta:Carta):
     win.blit(FONDO,(0,0))
     
     for pila in lista_pm:
@@ -74,14 +76,34 @@ def draw_win(win:py.Surface,lista_pm:list[Pila_Mesa],lista_pb:Pila_Baraja,lista_
     for pila in lista_pf:
         pila.draw_pila(win)
 
-    lista_pb.draw_pila(win)
+    pila_baraja.draw_pila(win)
     if carta != None : carta.draw_carta(win,carta.x,carta.y)
     py.display.flip()
 
+#Este metodo devuelve una lista con las cartas disponibles de todas las pilas que hay 
+def cartas_disponibles(lista_pm:list[Pila_Mesa],pila_baraja:Pila_Baraja,lista_pf:list[Pila_Fin]) -> list[Carta]:
+    lista_disponibles = []
+    for p_m in lista_pm: #Para cada pila de la mesa, cojo las cartas que esten giradas
+        for carta in p_m.get_cartas():
+            if not(carta.esta_girada()):
+                lista_disponibles.append(carta)
+    
+    if len(pila_baraja.pila_ini.get_cartas()) > 0: 
+        lista_disponibles.append(pila_baraja.pila_ini.get_cartas()[0])#De la pila de barajas inicial cojo la primera
 
-def run(win:py.Surface,clock:py.time.Clock,lista_pm,lista_pb,lista_pf):
+    if len(pila_baraja.pila_fin.get_cartas()) > 0: 
+        lista_disponibles.append(pila_baraja.pila_fin.get_cartas()[-1])#De la pila de barajas inicial cojo la ultima
+
+    for p_f in lista_pf:
+        if len(p_f.get_cartas()) > 0:lista_disponibles.append(p_f.get_cartas()[-1]) #De la pila final cojo la ultima carta 
+
+    
+    return lista_disponibles
+
+
+def run(win:py.Surface,clock:py.time.Clock,lista_pm,pila_baraja,lista_pf):
     global BARAJA,CARTA_CLICADA
-    lista_disponible:list[Carta] = cartas_disponibles(lista_pm,lista_pb,lista_pf)#Obtengo la lista de cartas disponibles
+    lista_disponible:list[Carta] = cartas_disponibles(lista_pm,pila_baraja,lista_pf)#Obtengo la lista de cartas disponibles
     run = True
     while run:
         clock.tick(60)
@@ -97,44 +119,42 @@ def run(win:py.Surface,clock:py.time.Clock,lista_pm,lista_pb,lista_pf):
             if event.type == py.MOUSEBUTTONDOWN:
                 if event.button == 1: #Me aseguro de que el boton que se presiona del mouse sea el BOTON IZQUIERDO
                     #He de iterar sobre todas las cartas que hay en las pilas y sacarla con pop
-                    x,y = py.mouse.get_pos()
                     for carta in lista_disponible:
                         if carta.get_rect().collidepoint(event.pos) and CARTA_CLICADA == None:
                                 CARTA_CLICADA = carta.get_pila().pop(carta)
-                            
+                                '''
+                                if isinstance(carta.get_pila(),Pila):
+                                    print("PILA BARAJA")
+                                    pila_baraja.pop(carta)
+                                else:
+                                    CARTA_CLICADA = carta.get_pila().pop(carta)
+                                
+                                '''
+                                
+                                         
             if event.type == py.MOUSEBUTTONUP:
                 CARTA_CLICADA = None
+                lista_disponible = cartas_disponibles(lista_pm,pila_baraja,lista_pf)#Actualizo la lista de cartas disponibles
+
+
             if event.type == py.MOUSEMOTION:
                 if CARTA_CLICADA != None:
                     x, y = py.mouse.get_pos()
                     CARTA_CLICADA.x = x - ANCHO_CARTA // 2 
                     CARTA_CLICADA.y = y - ALTO_CARTA // 2
 
-        draw_win(win,lista_pm,lista_pb,lista_pf,CARTA_CLICADA)
+        draw_win(win,lista_pm,pila_baraja,lista_pf,CARTA_CLICADA)
         
 
 def main():
     
     win = py.display.set_mode((ANCHO_VENTANA,ALTO_VENTANA))
     clock = py.time.Clock()
-    lista_pm,lista_pb,lista_pf=repartir_cartas()
-    #print("El numn {}".format(lista_pb.get_num_cartas_ini()))
-    run(win,clock,lista_pm,lista_pb,lista_pf)
+    lista_pm,pila_baraja,lista_pf=repartir_cartas()
+    #print("El numn {}".format(pila_baraja.get_num_cartas_ini()))
+    run(win,clock,lista_pm,pila_baraja,lista_pf)
     #repartir_cartas() #Reparto las cartas de la partida, esto solo se va a hacer 1 vez por partida
     
-#Este metodo devuelve una lista con las cartas disponibles de todas las pilas que hay 
-def cartas_disponibles(lista_pm:list[Pila_Mesa],lista_pb:Pila_Baraja,lista_pf:list[Pila_Fin]) -> list[Carta]:
-    lista_disponibles = []
-    for p_m in lista_pm: #Para cada pila de la mesa, cojo las cartas que esten giradas
-        for carta in p_m.get_cartas():
-            if not(carta.esta_girada()):
-                lista_disponibles.append(carta)
-    if len(lista_pb.pila_ini.get_cartas()) > 0: lista_disponibles.append(lista_pb.pila_ini.get_cartas()[0])#De la pila de barajas inicial cojo la primera
-    if len(lista_pb.pila_fin.get_cartas()) > 0:lista_disponibles.append(lista_pb.pila_fin.get_cartas()[-1])#De la pila de barajas inicial cojo la ultima
-    for p_f in lista_pf:
-        if len(p_f.get_cartas()) > 0:lista_disponibles.append(p_f.get_cartas()[-1]) #De la pila final cojo la ultima carta 
-    
-    return lista_disponibles
 
 if __name__ == "__main__":
     main()

@@ -54,6 +54,7 @@ class Carta(object):
 
     def get_tipo(self):
         return self.tipo
+    
     def calc_color(self) -> str:
         
         if self.tipo == "Corazones" or self.tipo == "Rombo":
@@ -87,4 +88,4 @@ class Carta(object):
         win.blit(self.IMAGEN,rect.topleft)#Dibujo la imagen
 
     def __str__(self):
-        return "La carta es "+self.get_tipo()+" "+self.get_color()+" "+str(self.get_valor())
+        return self.get_tipo()+" "+self.get_color()+" "+str(self.get_valor())+ " PILA "+ self.get_pila().__str__()
