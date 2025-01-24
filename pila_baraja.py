@@ -1,13 +1,14 @@
-from pila import Pila,JOKER,OFFSET_X
+from pila import Pila,OFFSET_X
 from carta import Carta
 import pygame as py
 
-class Pila_Baraja():#Pila de la que saldran y se pondran las cartas
+class Pila_Baraja(Pila):#Pila de la que saldran y se pondran las cartas
 
     #Contendra 2 pilas del tipo Pila, de las cuales 1 sera la pila con todas las cartas restantes y la otra una pila vacia inicialmente
     def __init__(self, cartas: list[Carta], x:int, y:int,id:int):
         self.pila_ini = Pila_Mazo(cartas,x,y,id) #Esta pila se colocara a la izquierda, por lo que no le sumaremos el offset
         self.pila_fin = Pila_Deposito([],x+OFFSET_X,y,id)
+
     '''
     Creo una distincion:
         -> pop_ini() : Sirve para sacar una carta de la baraja principal y ponerlo en la baraja final
@@ -28,23 +29,29 @@ class Pila_Baraja():#Pila de la que saldran y se pondran las cartas
 
     #Este metodo elimina la carta del inicio de la pila de la pila inicial (Donde se cogen las cartas)
     def pop_ini(self,carta:Carta):
-        print("HAY "+str(self.pila_ini.get_num_cartas()))
         if self.pila_ini.get_num_cartas() > 0: #Caso de que haya mas cartas en la pila
-            c = self.pila_ini.pop(carta) #Elimino la primera carta de la pila (girada)
+            c = self.pila_ini.pop(carta) #Elimino la primera carta de la pila (girada)            
             self.pila_fin.join_rev(c)#Añado la carta a la pila final de manera inversa
-            if self.pila_ini.get_num_cartas()==0 : self.pila_ini.cartas = [JOKER] + self.pila_ini.cartas
-        elif self.pila_ini.cartas[0] == JOKER: #Caso de que no hayan cartas en la pila y quiera coger todas las cartas de la pila final
-            
+            self.pila_ini.check_cartas()
+        elif self.pila_ini.cartas[0] == Carta("JOKER",None): #Caso de que no hayan cartas en la pila y quiera coger todas las cartas de la pila final
             for c in self.pila_fin.cartas:
                 c.girar() #Giro la carta
-                self.pila_ini.join([c]) #Añado la carta a la pila inicial
+                self.pila_ini.join(c) #Añado la carta a la pila inicial
+            self.pila_fin.cartas = []
+            self.pila_fin.check_cartas()
+            self.pila_ini.check_cartas()
         return None
     
     #Este metodo elimina la carta del final de la pila de la pila final (Donde se dejan las cartas que no se usan)
     def pop_fin(self,carta:Carta) -> Carta:
         if self.pila_fin.get_num_cartas() > 0:#En el caso de que queden cartas en la pila
-            c = self.pila_fin.pop(carta) #Quito la carta de encima de la pila
-            
+            #Devuelvo la carta en la ultima posicion
+            c = self.pila_fin.cartas[-1]
+            self.pila_fin.cartas.remove(c)
+            self.pila_fin.check_cartas()
+            print("LAS CARTAS QUE QUEDAN EN LA PILA DEPOSITO SON:")
+            for cart in self.pila_fin.cartas:
+                print("\t"+cart.__str__())
             return c
         else:
             return None
@@ -61,6 +68,7 @@ class Pila_Baraja():#Pila de la que saldran y se pondran las cartas
     def draw_pila(self,win:py.Surface):
         self.pila_ini.draw_pila(win)
         self.pila_fin.draw_pila(win)
+        
 
 
 #Esta clase hace referencia a la pila donde inicialmente se dejan las cartas

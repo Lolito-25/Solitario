@@ -79,11 +79,14 @@ def draw_win(win:py.Surface,lista_pm:list[Pila_Mesa],pila_baraja:Pila_Baraja,lis
         pila.draw_pila(win)
 
     pila_baraja.draw_pila(win)
-    if carta != None : carta.draw_carta(win,carta.x,carta.y)
+    
+    if carta != None : 
+        carta.draw_carta(win,carta.x,carta.y)
     py.display.flip()
 
 #Este metodo devuelve una lista con las cartas disponibles de todas las pilas que hay 
-def cartas_disponibles(lista_pm:list[Pila_Mesa],pila_baraja:Pila_Baraja,lista_pf:list[Pila_Fin]) -> list[Carta]:
+def cartas_disponibles(lista_pm:list[Pila_Mesa],pila_baraja:Pila_Baraja,lista_pf:list[Pila_Fin]):
+    lista_clicables = []
     lista_disponibles = []
     for p_m in lista_pm: #Para cada pila de la mesa, cojo las cartas que esten giradas
         for carta in p_m.get_cartas():
@@ -99,15 +102,19 @@ def cartas_disponibles(lista_pm:list[Pila_Mesa],pila_baraja:Pila_Baraja,lista_pf
     for p_f in lista_pf:
         if len(p_f.get_cartas()) > 0:lista_disponibles.append(p_f.get_cartas()[-1]) #De la pila final cojo la ultima carta 
 
+    for c in lista_disponibles:
+        if c.nombre != "JOKER":
+            lista_clicables.append(c)
     
-    return lista_disponibles
+    return (lista_disponibles,lista_clicables)
 
 
 def run(win:py.Surface,clock:py.time.Clock,lista_pm,pila_baraja,lista_pf):
     global BARAJA,CARTA_CLICADA
-    lista_disponible:list[Carta] = cartas_disponibles(lista_pm,pila_baraja,lista_pf)#Obtengo la lista de cartas disponibles
-    for c in lista_disponible:
-        print(c.__str__())
+    res = cartas_disponibles(lista_pm,pila_baraja,lista_pf)#Obtengo la lista de cartas disponibles
+    lista_disponible:list[Carta] = res[0]
+    lista_clicable :list[Carta] = res[1]
+    
     run = True
     while run:
         clock.tick(60)
@@ -123,18 +130,14 @@ def run(win:py.Surface,clock:py.time.Clock,lista_pm,pila_baraja,lista_pf):
             if event.type == py.MOUSEBUTTONDOWN:
                 if event.button == 1: #Me aseguro de que el boton que se presiona del mouse sea el BOTON IZQUIERDO
                     #He de iterar sobre todas las cartas que hay en las pilas y sacarla con pop
-                    for carta in lista_disponible:
+                    for carta in lista_clicable:
                         if carta.get_rect().collidepoint(event.pos) and CARTA_CLICADA == None:
                             if pila_baraja.contiene_carta(carta):
                                 CARTA_CLICADA = pila_baraja.pop(carta)
                             else:
                                 CARTA_CLICADA = carta.get_pila().pop(carta)
                             if CARTA_CLICADA != None: lista_disponible.remove(CARTA_CLICADA)
-                            
-                                
-                                
-                                
-                                         
+                                  
             if event.type == py.MOUSEBUTTONUP:
                 '''
                 Cuando suelte el raton se han de dar 2 casos:
@@ -144,11 +147,12 @@ def run(win:py.Surface,clock:py.time.Clock,lista_pm,pila_baraja,lista_pf):
                     2-> No se ha soltado encima de ninguna pila
                 Hemos de esperar a cambiar el estado de la mesa hasta que se haga un join valido, esto implica que:
                     ->No se gire la carta que esta por debajo de la que hemos quitado
-                    ->Se guarde la pila inicial de la cartaç
+                    ->Se guarde la pila inicial de la carta
                 Si se da bien el join, he de actualizar la lista de cartas disponibles
                 '''
 
                 if CARTA_CLICADA != None:
+                    
                     for carta in lista_disponible:
                         if carta.get_rect().colliderect(CARTA_CLICADA.get_rect()):
                             carta.get_pila().cambiar_estado(CARTA_CLICADA,CARTA_CLICADA.get_pila())
@@ -159,10 +163,10 @@ def run(win:py.Surface,clock:py.time.Clock,lista_pm,pila_baraja,lista_pf):
                         CARTA_CLICADA.get_pila().cambiar_estado(CARTA_CLICADA,CARTA_CLICADA.get_pila())
                         CARTA_CLICADA = None
 
-                lista_disponible = cartas_disponibles(lista_pm,pila_baraja,lista_pf)
-                print("-----------------------------")
-                for c in lista_disponible:
-                    print(c.__str__())
+                res = cartas_disponibles(lista_pm,pila_baraja,lista_pf)#Obtengo la lista de cartas disponibles
+                lista_disponible:list[Carta] = res[0]
+                lista_clicable :list[Carta] = res[1]
+
 
             if event.type == py.MOUSEMOTION:
                 if CARTA_CLICADA != None:

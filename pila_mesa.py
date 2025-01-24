@@ -1,4 +1,4 @@
-from pila import Pila,JOKER,OFFSET_Y
+from pila import Pila,OFFSET_Y
 from carta import Carta
 import pygame as py
 
@@ -19,7 +19,7 @@ class Pila_Mesa(Pila):#Pila que corresponde a las cartas del juego inicial
         Hemos de comprobar que coincide la ultima carta de la lista que nos pasan, por lo que miraremos cartas_unir[-1]
         '''
         
-        if len(self.cartas) == 0: #Caso 1
+        if len(self.cartas) == 1 and self.cartas[-1].nombre == "JOKER": #Caso 1
             if carta_unir.get_valor()==13:
                 self.cartas = [carta_unir] + self.cartas
         elif carta_unir.get_pila()==self:

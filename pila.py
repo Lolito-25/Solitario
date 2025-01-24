@@ -12,13 +12,13 @@ Estos son los tipos de pila que van a haber:
 OFFSET_X = 200 #Representa el offset que tienen las pilas de cartas entre ellas en caso de ser del mismo tipo
 OFFSET_Y = 35 #Representa el offset en el eje y
 
-JOKER= py.transform.scale((py.image.load(os.path.join("Imagenes","Joker.jpg"))),(125,175))#Reverso de la carta
+
 
 
 class Pila(object):
 
     def __init__(self, cartas:list[Carta], x:int, y:int, id:int) :
-        self.cartas = cartas #Lista de cartas que contendra la pila de cartas de las cuales inicialmente solo 1 estara dada la vuelta y el resto no
+        self.cartas = cartas  #Lista de cartas que contendra la pila de cartas de las cuales inicialmente solo 1 estara dada la vuelta y el resto no
         for carta in cartas:
             carta.set_pila(self)
             carta.x = x
@@ -28,6 +28,7 @@ class Pila(object):
         self.y = y
 
         self.id = id #Identificador de la pila (no sirve de mucho)
+        self.check_cartas()
         
     #Este metodo recibe una carta que ha de salir y devuelve el resto de cartas que van desde ella hasta el tope de la pila
     def pop(self,carta:Carta) -> Carta:
@@ -41,14 +42,16 @@ class Pila(object):
     
     #Este metodo une una lista de cartas a la pila por el principio
     def join(self,carta:Carta):
-        self.cartas = [carta] + self.cartas
+        self.cartas.insert(0,carta)
         carta.set_pila(self)
+        self.check_cartas()
     
     #Este metodo une una lista de cartas a la pila por el final
     def join_rev(self,cartas:Carta):
         cartas.girar()
-        self.cartas = self.cartas + [cartas]
+        self.cartas.append(cartas)
         cartas.set_pila(self)
+        self.check_cartas()
         
 
     #Este metodo refresca la pila, girando la carte de mas arriba (si no esta girada)
@@ -57,7 +60,6 @@ class Pila(object):
             #Compruebo si la pila en la cima de la pila esta girada o no
             if self.cartas[0].esta_girada():#Si la carta esta girada le doy la vuelta
                 self.cartas[0].girar()
-        
             #Si no esta girada no hago nada
 
     #Este metodo devuelve el numero de cartas
@@ -73,12 +75,8 @@ class Pila(object):
     #Para dibujar la pila solo necesito la ventana 
     def draw_pila(self,win:py.Surface):
         #Para ser mas eficiente, no he de pintar todas las cartas una encima de otra, no tendira sentido ya que no se verian, solo pinto la que esta mas arriba
-        num = self.get_num_cartas()
-        if num > 0 and self.cartas[-1] != JOKER:
-            self.cartas[-1].draw_carta(win,self.x,self.y)
-        else:
-            rect = JOKER.get_rect(topleft = (self.x,self.y))#Obtengo el rectangulo asociado a la imagen(hitbox) y cambio sus coordenadas a las pasadas como parametros en la funcion
-            win.blit(JOKER,rect.topleft)#Dibujo la imagen
+        self.cartas[-1].draw_carta(win,self.x,self.y)
+
 
     '''
     Esta funcion recibira como parametros:
@@ -87,13 +85,36 @@ class Pila(object):
         -pila : Es la pila antigua de la carta
     '''
     def cambiar_estado(self, carta : Carta, pila):
-        c = self.join(carta) #Introduzco la nueva carta en la pila
-        if c != None:#Caso de que algo haya ido mal en el proceso
-            pila.join(c)
-        pila.pila_refresh() #Refresco la pila anterior
+        #Caso de que la pila que me pasan por parametro sea igual que la mia
+        if self.id == pila.id:
+            if pila.id in (8,9,10,11,12):#En el caso de que sea una pila deposito
+                pila.cartas.append(carta)
+            else: #Si es una pila mesa
+                pila.join(carta)
+        else:
+            c = self.join(carta)
+            if c != None:
+                pila.join(carta)
+        pila.check_cartas()
+        pila.pila_refresh()
+        self.check_cartas()
+        self.pila_refresh()
         
-
-
+        
+    '''
+    En este metodo quiero hacer que si en la pila no hay cartas, que meta una carta JOKER
+    y que cuando hayan cartas, que retire la carta JOKER
+    '''
+    def check_cartas(self):
+        if self.get_num_cartas() == 0:
+            #Si no hay ninguna carta, entonces he de añadir al final una carta JOKER
+            self.cartas.append(Carta("JOKER",py.transform.scale((py.image.load(os.path.join("Imagenes","Joker.jpg"))),(125,175))))
+        else:
+            #Si hay mas de una carta y contiene un JOKER, quito el JOKER
+            c = Carta("JOKER",None)
+            if c in self.cartas and self.get_num_cartas() > 1:
+                self.cartas.remove(c)
+            del(c)
 
     def __str__(self):
         return str(self.id)
