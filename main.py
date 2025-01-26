@@ -86,25 +86,39 @@ def draw_win(win:py.Surface,lista_pm:list[Pila_Mesa],pila_baraja:Pila_Baraja,lis
 
 #Este metodo devuelve una lista con las cartas disponibles de todas las pilas que hay 
 def cartas_disponibles(lista_pm:list[Pila_Mesa],pila_baraja:Pila_Baraja,lista_pf:list[Pila_Fin]):
-    lista_clicables = []
-    lista_disponibles = []
-    for p_m in lista_pm: #Para cada pila de la mesa, cojo las cartas que esten giradas
-        for carta in p_m.get_cartas():
-            if not(carta.esta_girada()):
-                lista_disponibles.append(carta)
-    
-    if len(pila_baraja.pila_ini.get_cartas()) > 0: 
-        lista_disponibles.append(pila_baraja.pila_ini.get_cartas()[0])#De la pila de barajas inicial cojo la primera
-    
-    if len(pila_baraja.pila_fin.get_cartas()) > 0: 
-        lista_disponibles.append(pila_baraja.pila_fin.get_cartas()[-1])#De la pila de barajas inicial cojo la ultima
+    '''
+    Las cartas clicables son:
+        -> Pila Mesa: Todas las que no esten giradas y que no sean JOKER
+        -> Pila Fin: La ultima carta disponible si no es JOKER
+        -> Pila Baraja:
+            -Pila Deposito: La ultima carta que no sea JOKER
+            -Pila Mazo: La ultima carta (Aunque sea JOKER)
 
+    Las cartas disponibles son aquellas que se les puede poner cartas encima:
+        -> Pila Mesa: Todas las que no esten giradas (Puede ser JOKER)
+        -> Pila Fin: La ultima carta (Da igual que sea JOKER)
+        -> Pila Baraja: Ninguna
+    '''
+    lista_clicables = [] 
+    lista_disponibles = [] #Lista de cartas a las que se le podran poner cartas encima
+    
+    for p_m in lista_pm:
+        for c in p_m.cartas:
+            if not c.esta_girada() or c.nombre == "JOKER":
+                lista_disponibles.append(c)
+                if c.nombre != "JOKER": lista_clicables.append(c)
+    
     for p_f in lista_pf:
-        if len(p_f.get_cartas()) > 0:lista_disponibles.append(p_f.get_cartas()[-1]) #De la pila final cojo la ultima carta 
-
-    for c in lista_disponibles:
-        if c.nombre != "JOKER":
+        c = p_f.cartas[-1]
+        print(c.__str__())
+        lista_disponibles.append(c)
+        if p_f.cartas[-1].nombre != "JOKER":
             lista_clicables.append(c)
+        
+    lista_clicables.append(pila_baraja.pila_ini.cartas[-1])
+    c = pila_baraja.pila_fin.cartas[-1]
+    if c.nombre != "JOKER":
+        lista_clicables.append(c)
     
     return (lista_disponibles,lista_clicables)
 
@@ -136,7 +150,10 @@ def run(win:py.Surface,clock:py.time.Clock,lista_pm,pila_baraja,lista_pf):
                                 CARTA_CLICADA = pila_baraja.pop(carta)
                             else:
                                 CARTA_CLICADA = carta.get_pila().pop(carta)
-                            if CARTA_CLICADA != None: lista_disponible.remove(CARTA_CLICADA)
+
+                            if CARTA_CLICADA != None: 
+                                lista_clicable.remove(CARTA_CLICADA)
+                                
                                   
             if event.type == py.MOUSEBUTTONUP:
                 '''
@@ -154,8 +171,8 @@ def run(win:py.Surface,clock:py.time.Clock,lista_pm,pila_baraja,lista_pf):
                 if CARTA_CLICADA != None:
                     
                     for carta in lista_disponible:
-                        if carta.get_rect().colliderect(CARTA_CLICADA.get_rect()):
-                            carta.get_pila().cambiar_estado(CARTA_CLICADA,CARTA_CLICADA.get_pila())
+                        if carta != CARTA_CLICADA and carta.get_rect().colliderect(CARTA_CLICADA.get_rect()):
+                            CARTA_CLICADA = carta.get_pila().cambiar_estado(CARTA_CLICADA,CARTA_CLICADA.get_pila())
                             CARTA_CLICADA = None
                             break
                     

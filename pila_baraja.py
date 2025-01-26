@@ -29,10 +29,12 @@ class Pila_Baraja(Pila):#Pila de la que saldran y se pondran las cartas
 
     #Este metodo elimina la carta del inicio de la pila de la pila inicial (Donde se cogen las cartas)
     def pop_ini(self,carta:Carta):
-        if self.pila_ini.get_num_cartas() > 0: #Caso de que haya mas cartas en la pila
-            c = self.pila_ini.pop(carta) #Elimino la primera carta de la pila (girada)            
-            self.pila_fin.join_rev(c)#Añado la carta a la pila final de manera inversa
+        if self.pila_ini.get_num_cartas() > 0 and self.pila_ini.cartas[0] != Carta("JOKER",None): #Caso de que haya mas cartas en la pila
+            self.pila_ini.cartas.remove(carta) #Elimino la primera carta de la pila (girada)            
+            self.pila_fin.join_rev(carta)#Añado la carta a la pila final de manera inversa
+            carta.girar()
             self.pila_ini.check_cartas()
+            return None
         elif self.pila_ini.cartas[0] == Carta("JOKER",None): #Caso de que no hayan cartas en la pila y quiera coger todas las cartas de la pila final
             for c in self.pila_fin.cartas:
                 c.girar() #Giro la carta
@@ -40,7 +42,7 @@ class Pila_Baraja(Pila):#Pila de la que saldran y se pondran las cartas
             self.pila_fin.cartas = []
             self.pila_fin.check_cartas()
             self.pila_ini.check_cartas()
-        return None
+            return None
     
     #Este metodo elimina la carta del final de la pila de la pila final (Donde se dejan las cartas que no se usan)
     def pop_fin(self,carta:Carta) -> Carta:
@@ -49,9 +51,6 @@ class Pila_Baraja(Pila):#Pila de la que saldran y se pondran las cartas
             c = self.pila_fin.cartas[-1]
             self.pila_fin.cartas.remove(c)
             self.pila_fin.check_cartas()
-            print("LAS CARTAS QUE QUEDAN EN LA PILA DEPOSITO SON:")
-            for cart in self.pila_fin.cartas:
-                print("\t"+cart.__str__())
             return c
         else:
             return None

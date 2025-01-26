@@ -16,7 +16,12 @@ class Pila_Fin(Pila):#Pila en la que se colocaran las pilas finales
         if (self.cartas[0].nombre == "JOKER" and carta.get_valor()==1 #Caso de que no haya ninguna carta en la pila
             ) or (
             carta.get_tipo() == self.cartas[-1].get_tipo() and carta.get_valor() - 1 == self.cartas[-1].get_valor()): #Caso de que hayan cartas en la pila
-            super().join_rev([carta])
-            return 0
+            self.join_rev(carta)
+            return None
         else: #Caso de que haya habido un error
-            return -1
+            return carta
+
+    def pop(self,carta:Carta) -> Carta:
+        self.cartas.remove(carta)
+        self.check_cartas()
+        return(carta)

@@ -45,8 +45,10 @@ class Carta(object):
         return self.valor
     
     def get_rect(self) :
-        return self.img.get_rect(topleft=(self.x,self.y))
-
+        if self.nombre != "JOKER":
+            return self.img.get_rect(topleft=(self.x,self.y))
+        else:
+            return JOKER.get_rect(topleft = (self.x,self.y))
     def get_color(self):
         return self.color
 

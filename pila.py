@@ -45,14 +45,14 @@ class Pila(object):
         self.cartas.insert(0,carta)
         carta.set_pila(self)
         self.check_cartas()
+        return None
     
     #Este metodo une una lista de cartas a la pila por el final
     def join_rev(self,cartas:Carta):
-        cartas.girar()
         self.cartas.append(cartas)
         cartas.set_pila(self)
         self.check_cartas()
-        
+        return None
 
     #Este metodo refresca la pila, girando la carte de mas arriba (si no esta girada)
     def pila_refresh(self):
@@ -101,17 +101,19 @@ class Pila(object):
         self.pila_refresh()
         
         
+        
     '''
     En este metodo quiero hacer que si en la pila no hay cartas, que meta una carta JOKER
     y que cuando hayan cartas, que retire la carta JOKER
     '''
     def check_cartas(self):
+        c = Carta("JOKER",None)
         if self.get_num_cartas() == 0:
             #Si no hay ninguna carta, entonces he de añadir al final una carta JOKER
-            self.cartas.append(Carta("JOKER",py.transform.scale((py.image.load(os.path.join("Imagenes","Joker.jpg"))),(125,175))))
+            c.set_pila(self)
+            self.cartas.append(c)
         else:
             #Si hay mas de una carta y contiene un JOKER, quito el JOKER
-            c = Carta("JOKER",None)
             if c in self.cartas and self.get_num_cartas() > 1:
                 self.cartas.remove(c)
             del(c)

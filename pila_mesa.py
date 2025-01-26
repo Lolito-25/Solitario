@@ -1,5 +1,5 @@
 from pila import Pila,OFFSET_Y
-from carta import Carta
+from carta import Carta, JOKER
 import pygame as py
 
 class Pila_Mesa(Pila):#Pila que corresponde a las cartas del juego inicial
@@ -21,13 +21,19 @@ class Pila_Mesa(Pila):#Pila que corresponde a las cartas del juego inicial
         
         if len(self.cartas) == 1 and self.cartas[-1].nombre == "JOKER": #Caso 1
             if carta_unir.get_valor()==13:
-                self.cartas = [carta_unir] + self.cartas
-        elif carta_unir.get_pila()==self:
-            self.cartas = [carta_unir] + self.cartas
-        else: #Caso 2
-            if (self.cartas[0].get_valor()-carta_unir.get_valor() == 1) and (carta_unir.color != self.cartas[0].color):
-                self.cartas = [carta_unir] + self.cartas
+                self.cartas.insert(0,carta_unir)
                 carta_unir.set_pila(self)
+                return None
+            else:
+                return carta_unir
+        elif carta_unir.get_pila()==self:
+            self.cartas.insert(0,carta_unir)
+            return None
+        else: #Caso 3
+            if (self.cartas[0].get_valor()-carta_unir.get_valor() == 1) and (carta_unir.color != self.cartas[0].color):
+                self.cartas.insert(0,carta_unir)
+                carta_unir.set_pila(self)
+                return None
             else:
                 return carta_unir #Caso de que no se pueda unir
 
