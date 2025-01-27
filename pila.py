@@ -31,26 +31,26 @@ class Pila(object):
         self.check_cartas()
         
     #Este metodo recibe una carta que ha de salir y devuelve el resto de cartas que van desde ella hasta el tope de la pila
-    def pop(self,carta:Carta) -> Carta:
+    def pop(self,carta:Carta) -> list[Carta]:
         if len(self.cartas)>0:
             index = self.cartas.index(carta)#Veo cual es el indice de la carta
-            pop_item = self.cartas[index]#Pop_item contiene una lista de cartas de todas las que van desde ella hasta el principio
+            pop_item = self.cartas[:index+1]#Pop_item contiene una lista de cartas de todas las que van desde ella hasta el principio
             self.cartas = self.cartas[index+1:]#La lista ahora contendra las cartas restantes menos las que se han quitado
             return pop_item
         else:
             return None
     
     #Este metodo une una lista de cartas a la pila por el principio
-    def join(self,carta:Carta):
-        self.cartas.insert(0,carta)
-        carta.set_pila(self)
+    def join(self,cartas:list[Carta]):
+        self.cartas[:0] = cartas
+        cartas[0].set_pila(self)
         self.check_cartas()
         return None
     
     #Este metodo une una lista de cartas a la pila por el final
-    def join_rev(self,cartas:Carta):
-        self.cartas.append(cartas)
-        cartas.set_pila(self)
+    def join_rev(self,cartas:list[Carta]):
+        self.cartas.extend(cartas)
+        cartas[0].set_pila(self)
         self.check_cartas()
         return None
 
@@ -84,17 +84,29 @@ class Pila(object):
         -carta : Es la carta que se va a meter en la pila nueva (self)
         -pila : Es la pila antigua de la carta
     '''
-    def cambiar_estado(self, carta : Carta, pila):
+    def cambiar_estado(self, carta : list[Carta], pila):
         #Caso de que la pila que me pasan por parametro sea igual que la mia
+        c = self.join(carta)
+        if c != None:
+            if pila.id in (8,9,10,11,12):
+                pila.join_rev(carta)
+            else:
+                pila.join(carta)
+
+
+        '''
         if self.id == pila.id:
             if pila.id in (8,9,10,11,12):#En el caso de que sea una pila deposito
-                pila.cartas.append(carta)
+                pila.cartas.append(carta[0])
             else: #Si es una pila mesa
                 pila.join(carta)
         else:
             c = self.join(carta)
             if c != None:
-                pila.join(carta)
+                if 
+                pila.join(c)
+        '''
+        
         pila.check_cartas()
         pila.pila_refresh()
         self.check_cartas()

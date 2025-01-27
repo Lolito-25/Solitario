@@ -4,6 +4,7 @@ from os import listdir
 import time as tm
 import random
 from carta import Carta
+from pila import OFFSET_Y
 from pila_baraja import *
 from pila_mesa import Pila_Mesa
 from pila_fin import Pila_Fin
@@ -22,7 +23,7 @@ ANCHO_CARTA = 125
 ALTO_CARTA = 175
 
 
-CARTA_CLICADA : Carta = None #Inicialmente no se va a estar clicando sobre ninguna carta
+CARTA_CLICADA : list[Carta] = None #Inicialmente no se va a estar clicando sobre ninguna carta
 
 # Inicializar pygame
 py.init()
@@ -69,7 +70,7 @@ def repartir_cartas():#Metodo en el que se van a repartir las cartas en las pila
 
     return (lista_pm,pila_baraja,lista_pf)
 
-def draw_win(win:py.Surface,lista_pm:list[Pila_Mesa],pila_baraja:Pila_Baraja,lista_pf:list[Pila_Fin],carta:Carta):
+def draw_win(win:py.Surface,lista_pm:list[Pila_Mesa],pila_baraja:Pila_Baraja,lista_pf:list[Pila_Fin],cartas:list[Carta]):
     win.blit(FONDO,(0,0))
     
     for pila in lista_pm:
@@ -80,8 +81,9 @@ def draw_win(win:py.Surface,lista_pm:list[Pila_Mesa],pila_baraja:Pila_Baraja,lis
 
     pila_baraja.draw_pila(win)
     
-    if carta != None : 
-        carta.draw_carta(win,carta.x,carta.y)
+    if cartas != None : 
+        for carta in reversed(cartas):
+            carta.draw_carta(win,carta.x,carta.y)
     py.display.flip()
 
 #Este metodo devuelve una lista con las cartas disponibles de todas las pilas que hay 
@@ -109,10 +111,9 @@ def cartas_disponibles(lista_pm:list[Pila_Mesa],pila_baraja:Pila_Baraja,lista_pf
                 if c.nombre != "JOKER": lista_clicables.append(c)
     
     for p_f in lista_pf:
-        c = p_f.cartas[-1]
-        print(c.__str__())
+        c=p_f.cartas[-1]
         lista_disponibles.append(c)
-        if p_f.cartas[-1].nombre != "JOKER":
+        if c.nombre != "JOKER":
             lista_clicables.append(c)
         
     lista_clicables.append(pila_baraja.pila_ini.cartas[-1])
@@ -152,7 +153,10 @@ def run(win:py.Surface,clock:py.time.Clock,lista_pm,pila_baraja,lista_pf):
                                 CARTA_CLICADA = carta.get_pila().pop(carta)
 
                             if CARTA_CLICADA != None: 
-                                lista_clicable.remove(CARTA_CLICADA)
+                                for carta in CARTA_CLICADA:
+                                    lista_clicable.remove(carta)
+                                    if carta in lista_disponible:
+                                        lista_disponible.remove(carta)
                                 
                                   
             if event.type == py.MOUSEBUTTONUP:
@@ -169,15 +173,14 @@ def run(win:py.Surface,clock:py.time.Clock,lista_pm,pila_baraja,lista_pf):
                 '''
 
                 if CARTA_CLICADA != None:
-                    
                     for carta in lista_disponible:
-                        if carta != CARTA_CLICADA and carta.get_rect().colliderect(CARTA_CLICADA.get_rect()):
-                            CARTA_CLICADA = carta.get_pila().cambiar_estado(CARTA_CLICADA,CARTA_CLICADA.get_pila())
+                        if carta != CARTA_CLICADA[-1] and carta.get_rect().colliderect(CARTA_CLICADA[-1].get_rect()):
+                            CARTA_CLICADA = carta.get_pila().cambiar_estado(CARTA_CLICADA,CARTA_CLICADA[-1].get_pila())
                             CARTA_CLICADA = None
                             break
                     
                     if CARTA_CLICADA != None: # En el caso 2
-                        CARTA_CLICADA.get_pila().cambiar_estado(CARTA_CLICADA,CARTA_CLICADA.get_pila())
+                        CARTA_CLICADA[-1].get_pila().cambiar_estado(CARTA_CLICADA,CARTA_CLICADA[-1].get_pila())
                         CARTA_CLICADA = None
 
                 res = cartas_disponibles(lista_pm,pila_baraja,lista_pf)#Obtengo la lista de cartas disponibles
@@ -186,10 +189,13 @@ def run(win:py.Surface,clock:py.time.Clock,lista_pm,pila_baraja,lista_pf):
 
 
             if event.type == py.MOUSEMOTION:
+                
                 if CARTA_CLICADA != None:
                     x, y = py.mouse.get_pos()
-                    CARTA_CLICADA.x = x - ANCHO_CARTA // 2 
-                    CARTA_CLICADA.y = y - ALTO_CARTA // 2
+                    for z,carta in enumerate(CARTA_CLICADA):
+                        print(carta.__str__())
+                        carta.x = x - ANCHO_CARTA // 2  
+                        carta.y = (y - ALTO_CARTA // 2) - (z*OFFSET_Y)
 
         draw_win(win,lista_pm,pila_baraja,lista_pf,CARTA_CLICADA)
         

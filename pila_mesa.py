@@ -9,7 +9,7 @@ class Pila_Mesa(Pila):#Pila que corresponde a las cartas del juego inicial
         self.pila_refresh()
 
 
-    def join(self, carta_unir :Carta):
+    def join(self, cartas_unir :list[Carta]):
         '''
         La logica detras de este join es el siguiente:
         ->Si la pila esta vacia hemos de colocar solamente K
@@ -20,22 +20,24 @@ class Pila_Mesa(Pila):#Pila que corresponde a las cartas del juego inicial
         '''
         
         if len(self.cartas) == 1 and self.cartas[-1].nombre == "JOKER": #Caso 1
-            if carta_unir.get_valor()==13:
-                self.cartas.insert(0,carta_unir)
-                carta_unir.set_pila(self)
+            if cartas_unir[-1].get_valor()==13:
+                self.cartas = cartas_unir
+                for c in cartas_unir:
+                    c.set_pila(self)
                 return None
             else:
-                return carta_unir
-        elif carta_unir.get_pila()==self:
-            self.cartas.insert(0,carta_unir)
+                return cartas_unir
+        elif cartas_unir[-1].get_pila()==self: #Caso 2
+            self.cartas[:0] = cartas_unir
             return None
         else: #Caso 3
-            if (self.cartas[0].get_valor()-carta_unir.get_valor() == 1) and (carta_unir.color != self.cartas[0].color):
-                self.cartas.insert(0,carta_unir)
-                carta_unir.set_pila(self)
+            if (self.cartas[0].get_valor()-cartas_unir[-1].get_valor() == 1) and (cartas_unir[-1].color != self.cartas[0].color):
+                self.cartas[:0] = cartas_unir
+                for c in cartas_unir:
+                    c.set_pila(self)
                 return None
             else:
-                return carta_unir #Caso de que no se pueda unir
+                return cartas_unir #Caso de que no se pueda unir
 
     def pop(self,carta:Carta) -> list[Carta]:
         cartas = super().pop(carta) #LLamo al padre para eliminar las cartas
