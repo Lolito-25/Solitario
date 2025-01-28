@@ -27,7 +27,7 @@ class Pila_Mesa(Pila):#Pila que corresponde a las cartas del juego inicial
                 return None
             else:
                 return cartas_unir
-        elif cartas_unir[-1].get_pila()==self: #Caso 2
+        elif cartas_unir[-1].get_pila().id==self.id: #Caso 2
             self.cartas[:0] = cartas_unir
             return None
         else: #Caso 3

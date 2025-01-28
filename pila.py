@@ -86,12 +86,17 @@ class Pila(object):
     '''
     def cambiar_estado(self, carta : list[Carta], pila):
         #Caso de que la pila que me pasan por parametro sea igual que la mia
-        c = self.join(carta)
+        fallo = False
+        if pila.id == 8:
+            c=pila.join_rev(carta)
+        else:
+            c=pila.join(carta)
         if c != None:
-            if pila.id in (8,9,10,11,12):
-                pila.join_rev(carta)
+            fallo = True
+            if self.id in (8,9,10,11,12):
+                self.join_rev(carta)
             else:
-                pila.join(carta)
+                self.join(carta)
 
 
         '''
@@ -111,7 +116,7 @@ class Pila(object):
         pila.pila_refresh()
         self.check_cartas()
         self.pila_refresh()
-        
+        if fallo : return -1
         
         
     '''
@@ -133,3 +138,4 @@ class Pila(object):
     def __str__(self):
         return str(self.id)
        
+    

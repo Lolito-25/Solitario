@@ -1,5 +1,6 @@
 #Clase Carta en la que se llevara la logica correspondiente a ella
 import pygame as py
+import copy
 import os
 VALORES = {
     "A":1 , "2":2, "3":3, "4":4, "5":5, "6":6, "7":7, "8":8, "9":9, "10":10, "J":11, "Q":12, "K":13
@@ -21,24 +22,26 @@ class Carta(object):
         ->
     """
     
-    def __init__(self ,nombre: str ,img ,girado=True):
+    def __init__(self ,nombre: str ,img ,girado=True,x=0,y=0):
         global REVERSO
-
+        
+        self.pila = None
+        self.nombre = copy.deepcopy(nombre)
         self.IMAGEN = REVERSO
 
         #Estas 4 variables son las caracteristicas de una carta
-        self.tipo = nombre.split("_")[0]#Indicara de que tipo es la carta
-        self.valor = VALORES.get(nombre.split("_")[-1])#Consigo el ultimo caracter del nombre que indica el tipo de carta y del diccionario de valores lo traduzco por un valor numerico del que aplicarle el valor
+        self.tipo = self.nombre.split("_")[0]#Indicara de que tipo es la carta
+        self.valor = VALORES.get(self.nombre.split("_")[-1])#Consigo el ultimo caracter del nombre que indica el tipo de carta y del diccionario de valores lo traduzco por un valor numerico del que aplicarle el valor
         self.color = self.calc_color()
         
         #Estas son las propiedades con las que podemos jugar
-        self.img = img #Imagen de la carta
+        self.img = None
+        if img : self.img = img.copy() #Imagen de la carta
         self.girado = girado #Indica si la carta va a estar girada o no
-        self.pila = None
-        self.nombre = nombre
+
         
-        self.x = 0
-        self.y = 0
+        self.x = x
+        self.y = y
 
 
     def get_valor(self) -> int:
@@ -99,4 +102,18 @@ class Carta(object):
     
     def __eq__(self, value):
         return isinstance(value,Carta) and value.nombre == self.nombre and value.color == self.color and value.valor == self.valor
-
+    
+    def __deepcopy__(self, memo):
+        # Crea una nueva instancia de Carta
+        new_carta = Carta(
+            nombre=self.nombre,
+            img=copy.copy(self.img) if self.img else None,  # Copia manual de la superficie pygame
+            girado=self.girado,
+            x=self.x,
+            y=self.y
+        )
+        # Copia los atributos restantes
+        new_carta.IMAGEN = copy.copy(self.IMAGEN) if self.IMAGEN else None
+        new_carta.pila = copy.deepcopy(self.pila, memo)  # Copiar la pila de forma recursiva si existe
+        memo[id(self)] = new_carta
+        return new_carta

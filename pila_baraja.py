@@ -5,9 +5,9 @@ import pygame as py
 class Pila_Baraja(Pila):#Pila de la que saldran y se pondran las cartas
 
     #Contendra 2 pilas del tipo Pila, de las cuales 1 sera la pila con todas las cartas restantes y la otra una pila vacia inicialmente
-    def __init__(self, cartas: list[Carta], x:int, y:int,id:int):
-        self.pila_ini = Pila_Mazo(cartas,x,y,id) #Esta pila se colocara a la izquierda, por lo que no le sumaremos el offset
-        self.pila_fin = Pila_Deposito([],x+OFFSET_X,y,id)
+    def __init__(self, cartas_m: list[Carta],cartas_d:list[Carta], x:int, y:int,id:int):
+        self.pila_ini = Pila_Mazo(cartas_m,x,y,id) #Esta pila se colocara a la izquierda, por lo que no le sumaremos el offset
+        self.pila_fin = Pila_Deposito(cartas_d,x+OFFSET_X,y,id)
 
     '''
     Creo una distincion:
@@ -27,6 +27,12 @@ class Pila_Baraja(Pila):#Pila de la que saldran y se pondran las cartas
         else:
             return self.pop_fin(carta)
 
+    def check_cartas(self):
+        self.pila_ini.check_cartas()
+        self.pila_fin.check_cartas()
+
+    def pila_refresh(self):
+        self.pila_fin.pila_refresh()
 
     #Este metodo elimina la carta del inicio de la pila de la pila inicial (Donde se cogen las cartas)
     def pop_ini(self,carta:Carta):
@@ -63,7 +69,7 @@ class Pila_Baraja(Pila):#Pila de la que saldran y se pondran las cartas
         return self.pila_fin.get_num_cartas()
 
     def contiene_carta(self, carta:Carta) -> bool:
-        return carta.get_pila() == self.pila_fin or carta.get_pila() == self.pila_ini
+        return carta.get_pila().id == self.pila_fin.id
 
     def draw_pila(self,win:py.Surface):
         self.pila_ini.draw_pila(win)

@@ -4,8 +4,8 @@ import pygame as py
 
 class Pila_Fin(Pila):#Pila en la que se colocaran las pilas finales
 
-    def __init__(self,x:int ,y:int,id:int):#Inicialmente las pilas van a estar vacias
-        super().__init__([],x,y,id)
+    def __init__(self,cartas:list[Carta],x:int ,y:int,id:int):#Inicialmente las pilas van a estar vacias
+        super().__init__(cartas,x,y,id)
     #Este metodo devolvera -1 si hay algun error, 0 en otro caso
     def join(self, cartas: list[Carta]) -> int:
         '''
