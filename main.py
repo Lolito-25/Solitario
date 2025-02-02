@@ -8,7 +8,7 @@ from pila import OFFSET_Y
 from pila_baraja import *
 from pila_mesa import Pila_Mesa
 from pila_fin import Pila_Fin
-
+from estado import Estado
 #CONSTANTES
 DIR = "../Solitario/Imagenes/Cartas"#Direccion donde se encuentran las imagenes
 
@@ -23,6 +23,7 @@ PUNTUACION:int = 0
 ANCHO_CARTA = 125
 ALTO_CARTA = 175
 
+ID:int=0
 TIEMPO = time.time()
 
 CARTA_CLICADA : list[Carta] = None #Inicialmente no se va a estar clicando sobre ninguna carta
@@ -147,8 +148,27 @@ def get_pila(carta:Carta,lista_pm,pila_baraja,lista_pf):
         return lista_pf[id-9]
 
 
+
+
+def refrescar_pilas(lista_pm:list[Pila_Mesa],pila_baraja:Pila_Baraja,lista_pf:list[Pila_Fin]):
+    for pm in lista_pm:
+        pm.check_cartas()
+        pm.pila_refresh()
+
+    pila_baraja.pila_ini.check_cartas()
+    pila_baraja.pila_ini.pila_refresh()
+    pila_baraja.pila_fin.check_cartas()
+    pila_baraja.pila_fin.pila_refresh()
+
+    for pf in lista_pf:
+        pf.check_cartas()
+        pf.pila_refresh()
+
 def run(win:py.Surface,clock:py.time.Clock,lista_pm,pila_baraja,lista_pf):
-    global BARAJA,CARTA_CLICADA,PUNTUACION,TIEMPO,MANEJADOR_ESTADOS
+    global BARAJA,CARTA_CLICADA,PUNTUACION,TIEMPO,ID
+
+    estado = Estado()
+    estado.guardar_estado(ID,lista_pm,pila_baraja,lista_pf,PUNTUACION)
 
     res = cartas_disponibles(lista_pm,pila_baraja,lista_pf)#Obtengo la lista de cartas disponibles
     lista_disponible:list[Carta] = res[0]
@@ -211,6 +231,8 @@ def run(win:py.Surface,clock:py.time.Clock,lista_pm,pila_baraja,lista_pf):
                                     PUNTUACION = PUNTUACION - 5
                                 else:
                                     PUNTUACION = PUNTUACION + 5
+                                    ID = ID + 1
+                                    estado.guardar_estado(ID,lista_pm,pila_baraja,lista_pf,PUNTUACION)
                             CARTA_CLICADA = None
                             break
                     
@@ -231,7 +253,18 @@ def run(win:py.Surface,clock:py.time.Clock,lista_pm,pila_baraja,lista_pf):
                         carta.x = x - ANCHO_CARTA // 2  
                         carta.y = (y - ALTO_CARTA // 2) - (z*OFFSET_Y)
             
-                   
+
+            if event.type == py.KEYDOWN:
+                if event.key == py.K_z:
+                    if ID > 0 : ID = ID - 1
+                    e = estado.cargar_estado(ID,lista_pm,pila_baraja,lista_pf)
+                    
+                    if e:
+                        # Aquí debes reconstruir los objetos a partir del estado
+                        lista_pm, pila_baraja, lista_pf, PUNTUACION = e
+
+                        refrescar_pilas(lista_pm,pila_baraja,lista_pf)
+                
             res = cartas_disponibles(lista_pm,pila_baraja,lista_pf)#Obtengo la lista de cartas disponibles
             lista_disponible:list[Carta] = res[0]
             lista_clicable :list[Carta] = res[1]
