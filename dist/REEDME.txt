@@ -1,0 +1,5 @@
+ESC -> Terminar partida
+O(letra) -> Pasar canción
+P -> Pausar/Reproducir canción
+Z -> Deshacer(no spamear que se peta)
+UWU
